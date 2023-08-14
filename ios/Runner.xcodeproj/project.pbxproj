@@ -15,6 +15,9 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		B10B3AB8D7BAAFAC5862CF6D /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D53DB40459BF66A1F9BCFC1 /* Pods_Runner.framework */; };
+		E54288422A8A87E00099F128 /* slow_spring_board.aiff in Resources */ = {isa = PBXBuildFile; fileRef = E54288412A8A87E00099F128 /* slow_spring_board.aiff */; };
+		E54288462A8A887E0099F128 /* cow.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E54288452A8A887E0099F128 /* cow.mp3 */; };
+		E54288482A8A88F00099F128 /* cockerel.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = E54288472A8A88F00099F128 /* cockerel.mp3 */; };
 		E7341263E2D6DAE594AC33FF /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F5D5AE0FF5AC90B6DEC933 /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
@@ -65,6 +68,9 @@
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9A8C9C5AE46A3A1972770742 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		AA87CA749284E8839FB86A30 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		E54288412A8A87E00099F128 /* slow_spring_board.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = slow_spring_board.aiff; sourceTree = "<group>"; };
+		E54288452A8A887E0099F128 /* cow.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = cow.mp3; sourceTree = "<group>"; };
+		E54288472A8A88F00099F128 /* cockerel.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = cockerel.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +103,6 @@
 				9A8C9C5AE46A3A1972770742 /* Pods-RunnerTests.release.xcconfig */,
 				0633CF11AA3D6E35F34C579D /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -144,6 +149,9 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				E54288472A8A88F00099F128 /* cockerel.mp3 */,
+				E54288452A8A887E0099F128 /* cow.mp3 */,
+				E54288412A8A87E00099F128 /* slow_spring_board.aiff */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
@@ -259,6 +267,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E54288422A8A87E00099F128 /* slow_spring_board.aiff in Resources */,
+				E54288462A8A887E0099F128 /* cow.mp3 in Resources */,
+				E54288482A8A88F00099F128 /* cockerel.mp3 in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,

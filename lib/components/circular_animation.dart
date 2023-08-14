@@ -33,14 +33,9 @@ class _CircularRevealAnimationState extends State<CircularRevealAnimation> with 
       duration: widget.duration,
     );
 
-    // Listen to DataModel changes and start/stop animation accordingly
     Provider.of<DataModel>(context, listen: false).addListener(_dataModelListener);
 
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-  }
-
-  void resetTimer() {
-    _controller.reset();
   }
 
   void _dataModelListener() {
@@ -51,8 +46,10 @@ class _CircularRevealAnimationState extends State<CircularRevealAnimation> with 
     }
 
     if (Provider.of<DataModel>(context, listen: false).reset) {
+      print("circular reset");
       _controller.reset();
       Provider.of<DataModel>(context, listen: false).setReset(false);
+      Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
     }
   }
 

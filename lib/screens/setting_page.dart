@@ -5,6 +5,9 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../components/color_picker.dart';
 
+int _oneMinSeconds = 10;
+int _oneSessionMin = 1;
+
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
 
@@ -14,14 +17,16 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   List<String> musicList = [
+    'Silent',
     'Calm mind',
     'Rain thunder storm',
     'Relaxing'
   ];
 
   List<String> bellList = [
-    'Cow',
+    'Silent',
     'Chicken',
+    'Cow',
   ];
 
   List<String> timeList = [
@@ -34,6 +39,7 @@ class _SettingPageState extends State<SettingPage> {
   ];
 
   bool _showPanelTime = false;
+  bool _showPanelBreakTime = false;
   bool _showPanelMusic = false;
   bool _showPanelBell = false;
 
@@ -43,6 +49,7 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     int selectedIdxTime = Provider.of<DataModel>(context).selectTimeIndex.toInt();
+    int selectedIdxBreakTime = Provider.of<DataModel>(context).selectBreakTimeIndex.toInt();
     return Scaffold(
         appBar: AppBar(
           title: const Text('Setting'),
@@ -57,6 +64,7 @@ class _SettingPageState extends State<SettingPage> {
           onTap: () {
             setState(() {
               _showPanelTime = false;
+              _showPanelBreakTime = false;
               _showPanelMusic = false;
               _showPanelBell = false;
             });
@@ -71,56 +79,75 @@ class _SettingPageState extends State<SettingPage> {
                       setState(() {
                         if (_showPanelMusic) _showPanelMusic= false;
                         if (_showPanelBell) _showPanelBell= false;
+                        if (_showPanelBreakTime) _showPanelBreakTime= false;
                         _showPanelTime = !_showPanelTime;
                       });
                     },
-                    trailing: Text('${((Provider.of<DataModel>(context).selectTimeIndex+1)*5).toInt()} min',
+                    trailing: Text('${((Provider.of<DataModel>(context).selectTimeIndex+1)*1).toInt()} min',
                       style: const TextStyle(
                         fontSize: 16
                       ),
                     ),
                   ),
                   ListTile(
-                    title: const Text("Color"),
-                    trailing: ColorPicker(),
+                    title: const Text("Break Time"),
+                    onTap: () {
+                      setState(() {
+                        if (_showPanelMusic) _showPanelMusic= false;
+                        if (_showPanelBell) _showPanelBell= false;
+                        if (_showPanelTime) _showPanelTime= false;
+                        _showPanelBreakTime = !_showPanelBreakTime;
+                      });
+                    },
+                    trailing: Text('${((Provider.of<DataModel>(context).selectBreakTimeIndex+1)*1).toInt()} min',
+                      style: const TextStyle(
+                          fontSize: 16
+                      ),
+                    ),
                   ),
                   ListTile(
                     title: const Text("Music"),
-                    trailing: Switch(
-                      value: Provider.of<DataModel>(context, listen: false).isPlayingMusic,
-                      onChanged: (value) {
-                        setState(() {
-                          bool _isPlayingMusic = Provider.of<DataModel>(context, listen: false).isPlayingMusic;
-                          Provider.of<DataModel>(context, listen: false).setPlayingMusic(!_isPlayingMusic);
-                        });
-                      },
-                    ),
+                    // trailing: Switch(
+                    //   value: Provider.of<DataModel>(context, listen: false).isPlayingMusic,
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       bool _isPlayingMusic = Provider.of<DataModel>(context, listen: false).isPlayingMusic;
+                    //       Provider.of<DataModel>(context, listen: false).setPlayingMusic(!_isPlayingMusic);
+                    //     });
+                    //   },
+                    // ),
                     onTap: () {
                       setState(() {
                         if (_showPanelTime) _showPanelTime = false;
                         if (_showPanelBell) _showPanelBell = false;
+                        if (_showPanelBreakTime) _showPanelBreakTime= false;
                         _showPanelMusic = !_showPanelMusic;
                       });
                     },
                   ),
                   ListTile(
                     title: const Text("Bell"),
-                    trailing: Switch(
-                      value: Provider.of<DataModel>(context, listen: false).isPlayingBell,
-                      onChanged: (value) {
-                        setState(() {
-                          bool isPlayingBell = Provider.of<DataModel>(context, listen: false).isPlayingBell;
-                          Provider.of<DataModel>(context, listen: false).setPlayingBell(!isPlayingBell);
-                        });
-                      },
-                    ),
+                    // trailing: Switch(
+                    //   value: Provider.of<DataModel>(context, listen: false).isPlayingBell,
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       bool isPlayingBell = Provider.of<DataModel>(context, listen: false).isPlayingBell;
+                    //       Provider.of<DataModel>(context, listen: false).setPlayingBell(!isPlayingBell);
+                    //     });
+                    //   },
+                    // ),
                     onTap: () {
                       setState(() {
                         if (_showPanelTime) _showPanelTime = false;
                         if (_showPanelMusic) _showPanelMusic = false;
+                        if (_showPanelBreakTime) _showPanelBreakTime= false;
                         _showPanelBell = !_showPanelBell;
                       });
                     },
+                  ),
+                  ListTile(
+                    title: const Text("Color"),
+                    trailing: ColorPicker(),
                   ),
                 ],
               ),
@@ -136,10 +163,12 @@ class _SettingPageState extends State<SettingPage> {
                         //TODO detect change music
                         selectedIdxMusic = index;
                         if (index==0) {
-                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/please-calm-mind.mp3");
+                          Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
                         } else if (index==1) {
-                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/rain_thunder_storm.mp3");
+                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/please-calm-mind.mp3");
                         } else if (index==2) {
+                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/rain_thunder_storm.mp3");
+                        } else if (index==3) {
                           Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/relaxing.mp3");
                         }
                         Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
@@ -171,11 +200,11 @@ class _SettingPageState extends State<SettingPage> {
                           Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
                           selectedIdxBell = index;
                           if (index==0) {
-                            Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/please-calm-mind.mp3");
+                            Provider.of<DataModel>(context, listen: false).setPlayingBell(false);
                           } else if (index==1) {
-                            Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/rain_thunder_storm.mp3");
+                            Provider.of<DataModel>(context, listen: false).setBell("cockerel.mp3");
                           } else if (index==2) {
-                            Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/relaxing.mp3");
+                            Provider.of<DataModel>(context, listen: false).setBell("cow.mp3");
                           }
                         });
                       },
@@ -205,15 +234,47 @@ class _SettingPageState extends State<SettingPage> {
                         onTap: () {
                           setState(() {
                             selectedIdxTime = index;
-                            int time = (index + 1) * 5 * 60;
+                            int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
                             Provider.of<DataModel>(context,listen: false).setTimeIndex(index);
                             Provider.of<DataModel>(context,listen: false).setTime(time);
                           });
                         },
                         child: ListTile(
-                          title: Text("${(index+1) * 5} min"), // Display the actual time value
+                          title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
                           trailing: selectedIdxTime == index
+                              ? const Icon(Icons.check, color: Colors.green)
+                              : null,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                maxHeight: 250,
+                minHeight: 250,
+              ) : const SizedBox(),
+
+              (_showPanelBreakTime) ?
+              SlidingUpPanel(
+                panel:  SingleChildScrollView(
+                  child:  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedIdxBreakTime = index;
+                            int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
+                            Provider.of<DataModel>(context,listen: false).setBreakTimeIndex(index);
+                            Provider.of<DataModel>(context,listen: false).setBreakTime(time);
+                          });
+                        },
+                        child: ListTile(
+                          title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
+                          trailing: selectedIdxBreakTime == index
                               ? const Icon(Icons.check, color: Colors.green)
                               : null,
                         ),

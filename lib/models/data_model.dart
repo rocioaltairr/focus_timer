@@ -1,30 +1,40 @@
 import 'package:flutter/material.dart';
 
+int _oneMinSeconds = 10;
+int _oneSessionMin = 1;
+
 class DataModel extends ChangeNotifier {
+
   // Time
-  int _time = 25 * 60;
   bool _isRunning = false;
-  int _selectTimeIndex = 4; // (4+1)*5 = 25 min
+  int _time = _oneSessionMin * _oneMinSeconds;
+  int _selectTimeIndex = 0; // (4+1)*5 = 25 min
+  int _breakTime = _oneSessionMin * _oneMinSeconds;
+  int _selectBreakTimeIndex = 0; // (0+1)*5 = 5 min
 
   Color _currentColor = Colors.amber;
   List<Color> _currentColors = [Colors.yellow, Colors.green];
   bool _reset = false;
+  bool _isFocusTime = true;
 
   // Music, Bell
   bool _isChangeMusic = false;
-  bool _isPlayingMusic = false;
-  bool _isPlayingBell = false;
+  bool _isPlayingMusic = true;
+  bool _isPlayingBell = true;
   String _currentMusic = "assets/sounds/rain_thunder_storm.mp3";
-  String _currentBell = "assets/sounds/rain_thunder_storm.mp3";
+  String _currentBell = "cockerel.mp3";
 
   // Time
-  get time => _time;
   get isRunning => _isRunning;
+  get time => _time;
   get selectTimeIndex => _selectTimeIndex;
+  get breakTime => _breakTime;
+  get selectBreakTimeIndex => _selectBreakTimeIndex;
 
   get currentColor => _currentColor;
   get currentColors => _currentColors;
   get reset => _reset;
+  get isFocusTime => _isFocusTime;
 
   // Music, Bell
   get isChangeMusic => _isChangeMusic;
@@ -44,15 +54,37 @@ class DataModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setBreakTime(int setBreakTime) {
+    _breakTime = setBreakTime;
+    notifyListeners();
+  }
+
+  void setBreakTimeIndex(int setBreakTimeIndex) {
+    _selectBreakTimeIndex = setBreakTimeIndex;
+    notifyListeners();
+  }
+
   void setIsRunning(bool setIsRunning) {
     _isRunning = setIsRunning;
+    notifyListeners();
+  }
+
+  void setIsFocusTime(bool setIsFocusTime) {
+    _isFocusTime = setIsFocusTime;
     notifyListeners();
   }
 
   void resetTimer() {
     _reset = true;
     _isRunning = false;
-    _time = 25*60;
+    // _time = 25*60;
+    if (isFocusTime) {
+      _time = (_selectTimeIndex+1) * _oneMinSeconds;
+     // print("reset isFocusTime $_time");
+    } else {
+      _time = (_selectBreakTimeIndex+1) * _oneMinSeconds;
+     // print("reset not isFocusTime $_time");
+    }
   }
 
   // Color
@@ -92,11 +124,16 @@ class DataModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
   void setReset(bool setReset) {
     _reset = setReset;
-    _isRunning = false;
-    _time = 25 * 60;
+    //_isRunning = false;
+    if (isFocusTime) {
+      _time = (_selectTimeIndex+1) * _oneMinSeconds;
+      //print("reset isFocusTime $_time");
+    } else {
+      _time = (_selectBreakTimeIndex+1) * _oneMinSeconds;
+      //print("reset not isFocusTime $_time");
+    }
     notifyListeners();
   }
 }
