@@ -25,7 +25,9 @@ class _HomePageState extends State<HomePage> {
   double circleBorder = 30;
   double buttonSize = 64;
   final assetsAudioPlayer = AssetsAudioPlayer.newPlayer();
-  final sharePreference = SharedPreferences.getInstance();
+
+  late final SharedPreferences _prefs;
+  late final _prefsFuture = SharedPreferences.getInstance().then((v) => _prefs = v);
 
   @override
   void initState() {
@@ -50,202 +52,216 @@ class _HomePageState extends State<HomePage> {
     double innerCircleWidth = screenWidth * 4 / 5 - circleBorder;
 
     return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Show Snackbar',
-            onPressed: () {
-              Navigator.push(context, BottomToTopPageRoute(page: SettingPage()));
-            },
-          ),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.settings),
+          tooltip: 'Show Snackbar',
+          onPressed: () {
+            Navigator.push(context, BottomToTopPageRoute(page: SettingPage()));
+          },
         ),
-        body: Consumer<DataModel>(
-          builder: (context, model, child) {
-            if (model.isPlayingMusic && model.isRunning) {
-              try {
-                //assetsAudioPlayer.setLoopMode(LoopMode.single);
-                assetsAudioPlayer.play();
-              } catch (t) {
-                print('Error play audio player: $t');
-              }
-            } else {
-              try {
-                assetsAudioPlayer.pause();
-              } catch (error) {
-                print('Error stopping audio player: $error');
-              }
-            }
+      ),
+      body: FutureBuilder(
+        future: _prefsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Container(
+              color: Colors.black,
+              child: Consumer<DataModel>(
+                  builder: (context, model, child) {
+                    if (model.isPlayingMusic && model.isRunning) {
+                      try {
+                        //assetsAudioPlayer.setLoopMode(LoopMode.single);
+                        assetsAudioPlayer.play();
+                      } catch (t) {
+                        print('Error play audio player: $t');
+                      }
+                    } else {
+                      try {
+                        assetsAudioPlayer.pause();
+                      } catch (error) {
+                        print('Error stopping audio player: $error');
+                      }
+                    }
 
-            /// Change music
-            if (model.isChangeMusic && model.isRunning && model.isPlayingMusic) {
-              print("initState == play 1");
-              assetsAudioPlayer.open(
-                Audio(Provider.of<DataModel>(context, listen: false).currentMusic),
-                autoStart: false,
-                showNotification: false,
-              );
-              assetsAudioPlayer.play();
-              Provider.of<DataModel>(context).setChangeMusic(false);
-            }
-            return Center(
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      child: CustomPaint(
-                        painter: ClockPainter(screenHeight, screenWidth, currentColor),
-                      ),
-                    ),
-                    Positioned(
-                      top: innerCircleTop,
-                      left: innerCircleLeft,
-                      child: CircularRevealAnimation(
-                        isRunning: Provider.of<DataModel>(context, listen: false).isRunning,
-                        duration: Duration(seconds: Provider.of<DataModel>(context, listen: true).time), // Duration of the animation
-                        size: Size(innerCircleWidth, innerCircleWidth),
-                        color: Colors.grey.withOpacity(0.3), // Color of the animated container
-                      ),
-                    ),
-                    Positioned(
-                      top: screenHeight / 2 - appBarHeight - 110,
-                      left: screenWidth / 2  - 80,
-                      child:
-                      ClockWidget(
-                          screenHeight: screenHeight,
-                          screenWidth: screenWidth
-                      ),
-                    ),
-                    (Provider.of<DataModel>(context, listen: false).isFocusTime) ?
-                    Positioned(
-                      top: screenHeight - 200,
-                      left: 40,
-                      child: SizedBox(
-                        width: screenWidth - 80,
-                        height: 50,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    /// Change music
+                    if (model.isChangeMusic && model.isRunning && model.isPlayingMusic) {
+                      print("initState == play 1");
+                      assetsAudioPlayer.open(
+                        Audio(Provider.of<DataModel>(context, listen: false).currentMusic),
+                        autoStart: false,
+                        showNotification: false,
+                      );
+                      assetsAudioPlayer.play();
+                      Provider.of<DataModel>(context).setChangeMusic(false);
+                    }
+
+                    return Center(
+                        child: Stack(
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                style: ButtonStyle(
-                                  side: MaterialStateProperty.resolveWith<BorderSide>(
-                                        (Set<MaterialState> states) {
-                                      return const BorderSide(color: Colors.white);
-                                    },
-                                  ),
-                                ),
-                                onPressed: () {
-                                  bool running = Provider.of<DataModel>(context, listen: false).isRunning;
-                                  Provider.of<DataModel>(context, listen: false).setIsRunning(true);
-                                },
-                                child: const Text('Play',
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                            Positioned(
+                              top: 0,
+                              child: CustomPaint(
+                                painter: ClockPainter(screenHeight, screenWidth, currentColor),
                               ),
                             ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: OutlinedButton(
-                                style: ButtonStyle(
-                                  side: MaterialStateProperty.resolveWith<BorderSide>(
-                                        (Set<MaterialState> states) {
-                                      return const BorderSide(color: Colors.white);
-                                    },
-                                  ),
-                                ),
-                                onPressed: () {
-                                  Provider.of<DataModel>(context, listen: false).setIsRunning(false);
-                                },
-                                child: const Text('Pause',
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                            Positioned(
+                              top: innerCircleTop,
+                              left: innerCircleLeft,
+                              child: CircularRevealAnimation(
+                                isRunning: Provider.of<DataModel>(context, listen: false).isRunning,
+                                duration: (_prefs.getInt("time") == null)
+                                    ? Duration(seconds: Provider.of<DataModel>(context, listen: true).time)
+                                    : Duration(seconds: _prefs.getInt("time")!),
+                                // Duration(seconds: Provider.of<DataModel>(context, listen: true).time), // Duration of the animation
+                                size: Size(innerCircleWidth, innerCircleWidth),
+                                color: Colors.grey.withOpacity(0.3), // Color of the animated container
                               ),
                             ),
-                            SizedBox(width: 16),
-                            Expanded(
-                                child: OutlinedButton(
-                                  style: ButtonStyle(
-                                    side: MaterialStateProperty.resolveWith<BorderSide>(
-                                          (Set<MaterialState> states) {
-                                        return const BorderSide(color: Colors.white);
-                                      },
-                                    ),
+                            Positioned(
+                              top: screenHeight / 2 - appBarHeight - 110,
+                              left: screenWidth / 2  - 80,
+                              child:
+                              ClockWidget(
+                                  screenHeight: screenHeight,
+                                  screenWidth: screenWidth
+                              ),
+                            ),
+                            (Provider.of<DataModel>(context, listen: false).isFocusTime) ?
+                            Positioned(
+                                top: screenHeight - 200,
+                                left: 40,
+                                child: SizedBox(
+                                  width: screenWidth - 80,
+                                  height: 50,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: ButtonStyle(
+                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                                  (Set<MaterialState> states) {
+                                                return const BorderSide(color: Colors.white);
+                                              },
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            bool running = Provider.of<DataModel>(context, listen: false).isRunning;
+                                            Provider.of<DataModel>(context, listen: false).setIsRunning(true);
+                                          },
+                                          child: const Text('Play',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: ButtonStyle(
+                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                                  (Set<MaterialState> states) {
+                                                return const BorderSide(color: Colors.white);
+                                              },
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Provider.of<DataModel>(context, listen: false).setIsRunning(false);
+                                          },
+                                          child: const Text('Pause',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: 16),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: ButtonStyle(
+                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                                  (Set<MaterialState> states) {
+                                                return const BorderSide(color: Colors.white);
+                                              },
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            int timeIndex = (Provider.of<DataModel>(context, listen: false).selectTimeIndex);
+                                            int time = (timeIndex+1) * _oneSessionMin * _oneMinSeconds;
+                                            print("setTime3");
+                                            Provider.of<DataModel>(context, listen: false).setReset(true);
+                                            Provider.of<DataModel>(context, listen: false).setIsRunning(false);
+                                            Provider.of<DataModel>(context, listen: false).resetTimer();
+                                            Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
+                                          },
+                                          child: const Text('Quit',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                  onPressed: () {
-                                    int timeIndex = (Provider.of<DataModel>(context, listen: false).selectTimeIndex);
-                                    int time = (timeIndex+1) * _oneSessionMin * _oneMinSeconds;
-                                    print("setTime3");
-                                    Provider.of<DataModel>(context, listen: false).setReset(true);
-                                    Provider.of<DataModel>(context, listen: false).setIsRunning(false);
-                                    Provider.of<DataModel>(context, listen: false).resetTimer();
-                                    Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
-                                  },
-                                  child: const Text('Quit',
-                                    style: TextStyle(color: Colors.white),
+                                )
+                            ) : Positioned(
+                                top: screenHeight - 200,
+                                left: 40,
+                                child: SizedBox(
+                                  width: screenWidth - 80,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: ButtonStyle(
+                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                                  (Set<MaterialState> states) {
+                                                return const BorderSide(color: Colors.white);
+                                              },
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            print("Start Break");
+                                            Provider.of<DataModel>(context, listen: false).setIsRunning(true);
+                                          },
+                                          child: const Text('Start Break',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 16,
+                                      ),
+                                      Expanded(
+                                        child: OutlinedButton(
+                                          style: ButtonStyle(
+                                            side: MaterialStateProperty.resolveWith<BorderSide>(
+                                                  (Set<MaterialState> states) {
+                                                return const BorderSide(color: Colors.white);
+                                              },
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Provider.of<DataModel>(context, listen: false).setIsFocusTime(true);
+                                            Provider.of<DataModel>(context, listen: false).resetTimer();
+                                          },
+                                          child: const Text('Skip',
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      )
+                                    ],
                                   ),
-                                ),
-                            )
+                                )
+                            ),
                           ],
-                        ),
-                      )
-                    ) : Positioned(
-                        top: screenHeight - 200,
-                        left: 40,
-                        child: SizedBox(
-                          width: screenWidth - 80,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                  child: OutlinedButton(
-                                    style: ButtonStyle(
-                                      side: MaterialStateProperty.resolveWith<BorderSide>(
-                                            (Set<MaterialState> states) {
-                                          return const BorderSide(color: Colors.white);
-                                        },
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      print("Start Break");
-                                      //Provider.of<DataModel>(context, listen: false).setReset(true);
-                                      Provider.of<DataModel>(context, listen: false).setIsRunning(true);
-                                    },
-                                    child: const Text('Start Break',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                              ),
-                              const SizedBox(
-                                width: 16,
-                              ),
-                              Expanded(
-                                  child: OutlinedButton(
-                                    style: ButtonStyle(
-                                      side: MaterialStateProperty.resolveWith<BorderSide>(
-                                            (Set<MaterialState> states) {
-                                          return const BorderSide(color: Colors.white);
-                                        },
-                                      ),
-                                    ),
-                                    onPressed: () {
-                                      Provider.of<DataModel>(context, listen: false).setIsFocusTime(true);
-                                      Provider.of<DataModel>(context, listen: false).resetTimer();
-                                    },
-                                    child: const Text('Skip',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                              )
-                            ],
-                          ),
                         )
-                    ),
-                  ],
-                )
-            );
+                    );
+                  }
+              )
+            );// `_prefs` is ready for use.
           }
-        )
-
+          // `_prefs` is not ready yet, show loading bar till then.
+          return const CircularProgressIndicator();
+        },
+      ),
     );
   }
 }

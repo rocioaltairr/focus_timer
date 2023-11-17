@@ -66,6 +66,7 @@ Future<void> main() async {
   // needed if you intend to initialize in the `main` function
   WidgetsFlutterBinding.ensureInitialized();
 
+  print("rocio main");
   // initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('app_icon');
@@ -281,19 +282,19 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  Future<void> _showNotification() async {
-    const AndroidNotificationDetails androidNotificationDetails =
-    AndroidNotificationDetails('your channel id', 'your channel name',
-        channelDescription: 'your channel description',
-        importance: Importance.max,
-        priority: Priority.high,
-        ticker: 'ticker');
-    const NotificationDetails notificationDetails =
-    NotificationDetails(android: androidNotificationDetails);
-    await flutterLocalNotificationsPlugin.show(
-        id++, 'plain title', 'plain body', notificationDetails,
-        payload: 'item x');
-  }
+  // Future<void> _showNotification() async {
+  //   const AndroidNotificationDetails androidNotificationDetails =
+  //   AndroidNotificationDetails('your channel id', 'your channel name',
+  //       channelDescription: 'your channel description',
+  //       importance: Importance.max,
+  //       priority: Priority.high,
+  //       ticker: 'ticker');
+  //   const NotificationDetails notificationDetails =
+  //   NotificationDetails(android: androidNotificationDetails);
+  //   await flutterLocalNotificationsPlugin.show(
+  //       id++, 'plain title', 'plain body', notificationDetails,
+  //       payload: 'item x');
+  // }
 
   @override
   Widget build(BuildContext context) {

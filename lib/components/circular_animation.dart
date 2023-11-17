@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../models/data_model.dart';
 
+int _oneMinSeconds = 10;
+int _oneSessionMin = 1;
+
 class CircularRevealAnimation extends StatefulWidget {
   final bool isRunning;
   final Duration duration;
@@ -24,14 +27,17 @@ class _CircularRevealAnimationState extends State<CircularRevealAnimation> with 
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  var _prevTime;
   @override
   void initState() {
     super.initState();
 
+    print("cire init");
     _controller = AnimationController(
       vsync: this,
       duration: widget.duration,
     );
+    _prevTime = widget.duration;
 
     Provider.of<DataModel>(context, listen: false).addListener(_dataModelListener);
 
@@ -45,11 +51,21 @@ class _CircularRevealAnimationState extends State<CircularRevealAnimation> with 
       _controller.stop();
     }
 
+
+    if (Provider.of<DataModel>(context, listen: false).isFocusTime &&
+    _prevTime != Provider.of<DataModel>(context, listen: false).selectTimeIndex * _oneMinSeconds) {
+      _controller.duration = Duration(seconds: Provider.of<DataModel>(context, listen: false).time);
+    } else if (!Provider.of<DataModel>(context, listen: false).isFocusTime &&
+        _prevTime != Provider.of<DataModel>(context, listen: false).selectBreakTimeIndex * _oneMinSeconds) {
+      _controller.duration = Duration(seconds: Provider.of<DataModel>(context, listen: false).time);
+    }
+   // _controller.duration = Duration(seconds: 100);
     if (Provider.of<DataModel>(context, listen: false).reset) {
-      print("circular reset");
       _controller.reset();
-      Provider.of<DataModel>(context, listen: false).setReset(false);
-      Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
+     // StackOverflow problem
+     // Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
+      // if add this would let the count numeber not adding becouse the _resetTimer fun is not runnig in clock.dart
+      //Provider.of<DataModel>(context, listen: false).setReset(false);
     }
   }
 

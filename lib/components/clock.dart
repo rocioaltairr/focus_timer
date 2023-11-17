@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../main.dart';
 import '../models/data_model.dart';
 
-int _oneMinSeconds = 60;
+int _oneMinSeconds = 10;
 int _oneSessionMin = 1;
 
 class ClockWidget extends StatefulWidget {
@@ -25,6 +25,7 @@ class _ClockWidgetState extends State<ClockWidget> {
   @override
   void initState() {
     super.initState();
+    print("initState jaja ${Provider.of<DataModel>(context,listen: false).time}");
     _startCountdown();
     Provider.of<DataModel>(context,listen: false).addListener(_resetTimer);
   }
@@ -33,7 +34,7 @@ class _ClockWidgetState extends State<ClockWidget> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async{
       if (Provider.of<DataModel>(context, listen: false).isRunning) {
         int seconds = Provider.of<DataModel>(context, listen: false).time;
-        print("isRunning seconds $seconds");
+       // print("isRunning seconds $seconds");
         if (seconds > 0) {
           Provider.of<DataModel>(context, listen: false).setTime(seconds - 1);
         } else {
@@ -51,13 +52,10 @@ class _ClockWidgetState extends State<ClockWidget> {
   }
 
   void _resetTimer() {
-    // print("_resetTimer");
-
     if (Provider.of<DataModel>(context, listen: false).reset) {
-      print("_resetTimer is reset");
-      //_startCountdown();
-      //Provider.of<DataModel>(context, listen: false).setIsRunning(false); // Stop the timer
-      //Provider.of<DataModel>(context, listen: false).setReset(false);
+      _startCountdown();
+      Provider.of<DataModel>(context, listen: false).setReset(false);
+      Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
     }
   }
 
@@ -105,7 +103,8 @@ class _ClockWidgetState extends State<ClockWidget> {
         children: [
           Column(
             children: [
-              SizedBox(
+              Container(
+                color: Colors.red,
                   width: textSize,
                   height: 110,
                   child:
@@ -121,7 +120,8 @@ class _ClockWidgetState extends State<ClockWidget> {
                     ),
                   )
               ),
-              SizedBox(
+              Container(
+                  color: Colors.blue,
                   width: textSize,
                   height: 110,
                   child:
@@ -141,7 +141,8 @@ class _ClockWidgetState extends State<ClockWidget> {
           ),
           Column(
             children: [
-              SizedBox(
+              Container(
+                  color: Colors.black,
                   width: textSize,
                   height: 110,
                   child:
@@ -157,8 +158,8 @@ class _ClockWidgetState extends State<ClockWidget> {
                     ),
                   )
               ),
-              SizedBox(
-                  width: textSize,
+              Container(
+                  color: Colors.yellow,
                   height: 110,
                   child:
                   Center(

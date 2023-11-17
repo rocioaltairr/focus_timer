@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:focus_timer/models/data_model.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../components/color_picker.dart';
@@ -46,6 +47,9 @@ class _SettingPageState extends State<SettingPage> {
   int selectedIdxMusic = 0;
   int selectedIdxBell = 4;
 
+  late final SharedPreferences _prefs;
+  late final _prefsFuture = SharedPreferences.getInstance().then((v) => _prefs = v);
+
   @override
   Widget build(BuildContext context) {
     int selectedIdxTime = Provider.of<DataModel>(context).selectTimeIndex.toInt();
@@ -60,233 +64,247 @@ class _SettingPageState extends State<SettingPage> {
             },
           ),
         ),
-        body: GestureDetector(
-          onTap: () {
-            setState(() {
-              _showPanelTime = false;
-              _showPanelBreakTime = false;
-              _showPanelMusic = false;
-              _showPanelBell = false;
-            });
+        body: FutureBuilder(
+          future: _prefsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showPanelTime = false;
+                      _showPanelBreakTime = false;
+                      _showPanelMusic = false;
+                      _showPanelBell = false;
+                    });
+                  },
+                  child: Stack(
+                    children: [
+                      ListView(
+                        children: <Widget>[
+                          ListTile(
+                            title: const Text("Time"),
+                            onTap: () {
+                              setState(() {
+                                if (_showPanelMusic) _showPanelMusic= false;
+                                if (_showPanelBell) _showPanelBell= false;
+                                if (_showPanelBreakTime) _showPanelBreakTime= false;
+                                _showPanelTime = !_showPanelTime;
+                              });
+                            },
+                            trailing:
+                            (_prefs.getInt("focusTimeIndex") == null)
+                                ? Text('${((Provider.of<DataModel>(context).selectTimeIndex+1)*1).toInt()} min')
+                                : Text('min'),
+                            // Text('${((Provider.of<DataModel>(context).selectTimeIndex+1)*1).toInt()} min',
+                            //   style: const TextStyle(
+                            //       fontSize: 16
+                            //   ),
+                            // ),
+                          ),
+                          ListTile(
+                            title: const Text("Break Time"),
+                            onTap: () {
+                              setState(() {
+                                if (_showPanelMusic) _showPanelMusic= false;
+                                if (_showPanelBell) _showPanelBell= false;
+                                if (_showPanelTime) _showPanelTime= false;
+                                _showPanelBreakTime = !_showPanelBreakTime;
+                              });
+                            },
+                            trailing: Text('${((Provider.of<DataModel>(context).selectBreakTimeIndex+1)*1).toInt()} min',
+                              style: const TextStyle(
+                                  fontSize: 16
+                              ),
+                            ),
+                          ),
+                          ListTile(
+                            title: const Text("Music"),
+                            // trailing: Switch(
+                            //   value: Provider.of<DataModel>(context, listen: false).isPlayingMusic,
+                            //   onChanged: (value) {
+                            //     setState(() {
+                            //       bool _isPlayingMusic = Provider.of<DataModel>(context, listen: false).isPlayingMusic;
+                            //       Provider.of<DataModel>(context, listen: false).setPlayingMusic(!_isPlayingMusic);
+                            //     });
+                            //   },
+                            // ),
+                            onTap: () {
+                              setState(() {
+                                if (_showPanelTime) _showPanelTime = false;
+                                if (_showPanelBell) _showPanelBell = false;
+                                if (_showPanelBreakTime) _showPanelBreakTime= false;
+                                _showPanelMusic = !_showPanelMusic;
+                              });
+                            },
+                          ),
+                          ListTile(
+                            title: const Text("Bell"),
+                            // trailing: Switch(
+                            //   value: Provider.of<DataModel>(context, listen: false).isPlayingBell,
+                            //   onChanged: (value) {
+                            //     setState(() {
+                            //       bool isPlayingBell = Provider.of<DataModel>(context, listen: false).isPlayingBell;
+                            //       Provider.of<DataModel>(context, listen: false).setPlayingBell(!isPlayingBell);
+                            //     });
+                            //   },
+                            // ),
+                            onTap: () {
+                              setState(() {
+                                if (_showPanelTime) _showPanelTime = false;
+                                if (_showPanelMusic) _showPanelMusic = false;
+                                if (_showPanelBreakTime) _showPanelBreakTime= false;
+                                _showPanelBell = !_showPanelBell;
+                              });
+                            },
+                          ),
+                          ListTile(
+                            title: const Text("Color"),
+                            trailing: ColorPicker(),
+                          ),
+                        ],
+                      ),
+                      (_showPanelMusic) ?
+                      SlidingUpPanel(
+                        panel: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: musicList.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                //TODO detect change music
+                                selectedIdxMusic = index;
+                                if (index==0) {
+                                  Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
+                                } else if (index==1) {
+                                  Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/please-calm-mind.mp3");
+                                } else if (index==2) {
+                                  Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/rain_thunder_storm.mp3");
+                                } else if (index==3) {
+                                  Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/relaxing.mp3");
+                                }
+                                Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
+                              },
+                              child: ListTile(
+                                title: Text(musicList[index]),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
+                                trailing: selectedIdxMusic == index
+                                    ? const Icon(Icons.check, color: Colors.green)
+                                    : null,
+                              ),
+                            );
+                          },
+                        ),
+                        maxHeight: 250,
+                        minHeight: 250,
+                      ) : const SizedBox(),
+
+                      (_showPanelBell) ?
+                      SlidingUpPanel(
+                        panel:  ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: bellList.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
+                                  selectedIdxBell = index;
+                                  if (index==0) {
+                                    Provider.of<DataModel>(context, listen: false).setPlayingBell(false);
+                                  } else if (index==1) {
+                                    Provider.of<DataModel>(context, listen: false).setBell("cockerel.mp3");
+                                  } else if (index==2) {
+                                    Provider.of<DataModel>(context, listen: false).setBell("cow.mp3");
+                                  }
+                                });
+                              },
+                              child: ListTile(
+                                title: Text(bellList[index]),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
+                                trailing: selectedIdxBell == index
+                                    ? const Icon(Icons.check, color: Colors.green)
+                                    : null,
+                              ),
+                            );
+                          },
+                        ),
+                        maxHeight: 250,
+                        minHeight: 250,
+                      ) : const SizedBox(),
+
+                      (_showPanelTime) ?
+                      SlidingUpPanel(
+                        panel:  SingleChildScrollView(
+                          child:  ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: 10,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedIdxTime = index;
+                                    int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
+                                    _prefs.setInt('time', time);
+                                    _prefs.setInt('focusTimeIndex', index);
+                                    Provider.of<DataModel>(context,listen: false).setTimeIndex(index);
+                                    Provider.of<DataModel>(context,listen: false).setTime(time);
+                                  });
+                                },
+                                child: ListTile(
+                                  title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
+                                  trailing: selectedIdxTime == index
+                                      ? const Icon(Icons.check, color: Colors.green)
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        maxHeight: 250,
+                        minHeight: 250,
+                      ) : const SizedBox(),
+
+                      (_showPanelBreakTime) ?
+                      SlidingUpPanel(
+                        panel:  SingleChildScrollView(
+                          child:  ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: 5,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    selectedIdxBreakTime = index;
+                                    int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
+                                    Provider.of<DataModel>(context,listen: false).setBreakTimeIndex(index);
+                                    Provider.of<DataModel>(context,listen: false).setBreakTime(time);
+                                  });
+                                },
+                                child: ListTile(
+                                  title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
+                                  trailing: selectedIdxBreakTime == index
+                                      ? const Icon(Icons.check, color: Colors.green)
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        maxHeight: 250,
+                        minHeight: 250,
+                      ) : const SizedBox(),
+                    ],
+                  )
+              );
+            }
+            return const CircularProgressIndicator();
           },
-          child: Stack(
-            children: [
-              ListView(
-                children: <Widget>[
-                  ListTile(
-                    title: const Text("Time"),
-                    onTap: () {
-                      setState(() {
-                        if (_showPanelMusic) _showPanelMusic= false;
-                        if (_showPanelBell) _showPanelBell= false;
-                        if (_showPanelBreakTime) _showPanelBreakTime= false;
-                        _showPanelTime = !_showPanelTime;
-                      });
-                    },
-                    trailing: Text('${((Provider.of<DataModel>(context).selectTimeIndex+1)*1).toInt()} min',
-                      style: const TextStyle(
-                        fontSize: 16
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: const Text("Break Time"),
-                    onTap: () {
-                      setState(() {
-                        if (_showPanelMusic) _showPanelMusic= false;
-                        if (_showPanelBell) _showPanelBell= false;
-                        if (_showPanelTime) _showPanelTime= false;
-                        _showPanelBreakTime = !_showPanelBreakTime;
-                      });
-                    },
-                    trailing: Text('${((Provider.of<DataModel>(context).selectBreakTimeIndex+1)*1).toInt()} min',
-                      style: const TextStyle(
-                          fontSize: 16
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    title: const Text("Music"),
-                    // trailing: Switch(
-                    //   value: Provider.of<DataModel>(context, listen: false).isPlayingMusic,
-                    //   onChanged: (value) {
-                    //     setState(() {
-                    //       bool _isPlayingMusic = Provider.of<DataModel>(context, listen: false).isPlayingMusic;
-                    //       Provider.of<DataModel>(context, listen: false).setPlayingMusic(!_isPlayingMusic);
-                    //     });
-                    //   },
-                    // ),
-                    onTap: () {
-                      setState(() {
-                        if (_showPanelTime) _showPanelTime = false;
-                        if (_showPanelBell) _showPanelBell = false;
-                        if (_showPanelBreakTime) _showPanelBreakTime= false;
-                        _showPanelMusic = !_showPanelMusic;
-                      });
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("Bell"),
-                    // trailing: Switch(
-                    //   value: Provider.of<DataModel>(context, listen: false).isPlayingBell,
-                    //   onChanged: (value) {
-                    //     setState(() {
-                    //       bool isPlayingBell = Provider.of<DataModel>(context, listen: false).isPlayingBell;
-                    //       Provider.of<DataModel>(context, listen: false).setPlayingBell(!isPlayingBell);
-                    //     });
-                    //   },
-                    // ),
-                    onTap: () {
-                      setState(() {
-                        if (_showPanelTime) _showPanelTime = false;
-                        if (_showPanelMusic) _showPanelMusic = false;
-                        if (_showPanelBreakTime) _showPanelBreakTime= false;
-                        _showPanelBell = !_showPanelBell;
-                      });
-                    },
-                  ),
-                  ListTile(
-                    title: const Text("Color"),
-                    trailing: ColorPicker(),
-                  ),
-                ],
-              ),
-              (_showPanelMusic) ?
-              SlidingUpPanel(
-                panel: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: musicList.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        //TODO detect change music
-                        selectedIdxMusic = index;
-                        if (index==0) {
-                          Provider.of<DataModel>(context, listen: false).setPlayingMusic(false);
-                        } else if (index==1) {
-                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/please-calm-mind.mp3");
-                        } else if (index==2) {
-                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/rain_thunder_storm.mp3");
-                        } else if (index==3) {
-                          Provider.of<DataModel>(context, listen: false).setMusic("assets/sounds/relaxing.mp3");
-                        }
-                        Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
-                      },
-                      child: ListTile(
-                        title: Text(musicList[index]),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
-                        trailing: selectedIdxMusic == index
-                            ? const Icon(Icons.check, color: Colors.green)
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-                maxHeight: 250,
-                minHeight: 250,
-              ) : const SizedBox(),
-
-              (_showPanelBell) ?
-              SlidingUpPanel(
-                panel:  ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: bellList.length,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          Provider.of<DataModel>(context, listen: false).setChangeMusic(true);
-                          selectedIdxBell = index;
-                          if (index==0) {
-                            Provider.of<DataModel>(context, listen: false).setPlayingBell(false);
-                          } else if (index==1) {
-                            Provider.of<DataModel>(context, listen: false).setBell("cockerel.mp3");
-                          } else if (index==2) {
-                            Provider.of<DataModel>(context, listen: false).setBell("cow.mp3");
-                          }
-                        });
-                      },
-                      child: ListTile(
-                        title: Text(bellList[index]),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
-                        trailing: selectedIdxBell == index
-                            ? const Icon(Icons.check, color: Colors.green)
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-                maxHeight: 250,
-                minHeight: 250,
-              ) : const SizedBox(),
-
-              (_showPanelTime) ?
-              SlidingUpPanel(
-                panel:  SingleChildScrollView(
-                  child:  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedIdxTime = index;
-                            int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
-                            Provider.of<DataModel>(context,listen: false).setTimeIndex(index);
-                            Provider.of<DataModel>(context,listen: false).setTime(time);
-                          });
-                        },
-                        child: ListTile(
-                          title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
-                          trailing: selectedIdxTime == index
-                              ? const Icon(Icons.check, color: Colors.green)
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                maxHeight: 250,
-                minHeight: 250,
-              ) : const SizedBox(),
-
-              (_showPanelBreakTime) ?
-              SlidingUpPanel(
-                panel:  SingleChildScrollView(
-                  child:  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedIdxBreakTime = index;
-                            int time = (index + 1) * _oneSessionMin * _oneMinSeconds;
-                            Provider.of<DataModel>(context,listen: false).setBreakTimeIndex(index);
-                            Provider.of<DataModel>(context,listen: false).setBreakTime(time);
-                          });
-                        },
-                        child: ListTile(
-                          title: Text("${(index+1) * _oneSessionMin} min"), // Display the actual time value
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20), // Adjust as needed
-                          trailing: selectedIdxBreakTime == index
-                              ? const Icon(Icons.check, color: Colors.green)
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                maxHeight: 250,
-                minHeight: 250,
-              ) : const SizedBox(),
-            ],
-          )
         )
     );
   }
